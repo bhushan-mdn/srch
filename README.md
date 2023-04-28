@@ -1,2 +1,5 @@
-# srch
-grep-like tool written in rust
+<div align="center"> 
+  #`srch`  
+  
+  Learning rust while making an inferior ripgrep :)
+</div>
