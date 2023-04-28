@@ -1,5 +1,8 @@
+#![feature(drain_filter)]
+
 use std::env;
 use std::fs;
+use std::io::stdout;
 use std::io::{self, Read};
 use std::process;
 
@@ -9,12 +12,17 @@ fn print_usage() {
 srch
 Usage:
     srch [OPTIONS] QUERY [FILENAME]
+Options:
+    v - invert matches
+    n - show line numbers
 "
     );
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let mut args: Vec<String> = env::args().collect();
+
+    let opts: Vec<String> = args.drain_filter(|arg| arg.starts_with("-")).collect();
 
     if args.len() < 2 {
         print_usage();
@@ -47,10 +55,25 @@ fn main() {
 
     let contents = fs::read_to_string(file_path).expect("Should have been able to read the file");
 
+    let invert_match = opts.contains(&"-v".to_string());
+
     let matches: Vec<&str> = contents
         .split("\n")
-        .filter(|line| line.contains(query))
+        .filter(|line| {
+            if invert_match {
+                !line.contains(query)
+            } else {
+                line.contains(query)
+            }
+        })
         .collect();
 
-    dbg!(matches);
+    for m in matches {
+        // let output = m.replace(query, &color_red(query));
+        println!("{}", m);
+    }
+}
+
+fn color_red(original: &str) -> String {
+    format!("\033[91m{}\033[0m", original)
 }
